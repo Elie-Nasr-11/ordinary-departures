@@ -1,0 +1,37 @@
+/* Discussion screens. Scoped under .odd (the host's root container).
+   Three sections fill the root; the host shows and hides them with inline styles (no transitions here). */
+.odd{color:var(--ink,#fff);font-family:var(--sans,Inter,sans-serif);overflow:hidden}
+.odd>section{position:absolute;top:0;right:0;bottom:0;left:0;background:#000;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:32px 48px;transition:none}
+.odd *{box-sizing:border-box}
+.odd p,.odd h2,.odd h3,.odd ul{margin:0}
+
+/* type */
+.odd .odd-eb{font-family:var(--mono,"JetBrains Mono",monospace);font-size:11px;line-height:1.4;letter-spacing:.08em;color:var(--mute,#9a9ea7);margin-bottom:20px}
+.odd .odd-h1{font-family:var(--sans,Inter,sans-serif);font-variation-settings:"opsz" 32;font-weight:300;font-size:28px;line-height:1.15;letter-spacing:-.02em;color:#fff;margin-bottom:20px;max-width:16ch}
+.odd .odd-h3{font-family:var(--sans,Inter,sans-serif);font-variation-settings:"opsz" 32;font-weight:300;font-size:22px;line-height:1.2;letter-spacing:-.015em;color:#fff;margin-bottom:14px}
+.odd .odd-lead{font-weight:400;font-size:15px;line-height:1.6;color:var(--soft,#c3c6cd);max-width:44ch}
+.odd .odd-para{font-weight:400;font-size:13px;line-height:1.6;color:var(--soft,#c3c6cd);max-width:44ch}
+.odd .odd-para+.odd-para{margin-top:12px}
+
+/* screen A: two columns, 64px apart; the list on the right starts level with the paragraph */
+.odd .odd-grid{display:grid;grid-template-columns:min(30vw,400px) min(30vw,400px);grid-template-rows:auto auto;column-gap:64px;align-items:start}
+.odd .odd-head{grid-column:1;grid-row:1}
+.odd .odd-lead{grid-column:1;grid-row:2}
+.odd .odd-rhy{grid-column:2;grid-row:2;list-style:none;padding:0;max-width:44ch}
+.odd .odd-rhy li{position:relative;padding-left:20px;font-size:13px;line-height:1.6;color:var(--soft,#c3c6cd)}
+.odd .odd-rhy li+li{margin-top:14px}
+.odd .odd-rhy li::before{content:"";position:absolute;left:0;top:.5em;width:7px;height:7px;border-radius:50%;background:#f0b95e}
+.odd .odd-rhy li b{font-weight:500;color:#fff}
+
+/* screen G: the graph, one SVG, sized to the width or to the height, whichever is tighter */
+.odd .odd-g{flex-direction:column}
+.odd .odd-fig{width:min(92vw,1500px,calc((100vh - 240px) * 1.842))}
+.odd .odd-dg{width:100%;border:0;padding:0;margin:0;background:none}
+.odd .odd-dg svg{display:block;width:100%;height:auto;overflow:visible}
+.odd .odd-dg svg text{font-family:var(--sans,Inter,sans-serif)}
+.odd .odd-dg svg text.m{font-family:var(--mono,"JetBrains Mono",monospace)}
+.odd .odd-src{display:none}
+
+/* screen C: two columns, 64px apart, tops level */
+.odd .odd-row{display:flex;gap:64px;align-items:flex-start;justify-content:center}
+.odd .odd-row .odd-col{flex:0 0 min(30vw,400px);width:min(30vw,400px)}

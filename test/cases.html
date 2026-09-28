@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Case panels: test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../css/cases.css">
+<style>
+  :root{--ink:#fff;--soft:#c3c6cd;--mute:#9a9ea7;--rule:#2a2c32;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+  html{background:#000;color:#fff;font-family:var(--sans);font-optical-sizing:auto;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:#000;height:400vh;
+    background-image:repeating-linear-gradient(#000 0 120px,#15161a 120px 122px)}
+  /* the host's fixed container, as the page will size it */
+  #cases{position:fixed;top:58px;bottom:0;left:0;width:min(46vw,640px)}
+  #bar{position:fixed;top:0;left:0;right:0;height:58px;display:flex;align-items:center;gap:14px;padding:0 20px;
+    font-family:var(--mono);font-size:12px;color:var(--mute);background:#000;z-index:5}
+  #bar a{color:var(--mute);cursor:pointer;text-decoration:none}
+  #bar a:hover{color:#fff}
+  #log{position:fixed;right:20px;bottom:20px;font-family:var(--mono);font-size:11px;color:var(--mute);max-width:40ch}
+</style>
+</head>
+<body>
+<div id="bar"><span>show:</span></div>
+<div id="cases"></div>
+<div id="log">The page behind is 400vh tall so a wheel over the panel can be checked: it must scroll the panel, not the page.</div>
+
+<script src="../lib/rough.js"></script>
+<script src="../lib/sketch.js"></script>
+<script src="../js/cases.js"></script>
+<script>
+(function () {
+  var bar = document.getElementById('bar');
+  var log = document.getElementById('log');
+  fetch('../data/cases.json').then(function (r) { return r.json(); }).then(function (d) {
+    var root = document.getElementById('cases');
+    ODCases.build(d.cases, root, {
+      imgBase: '../img/cases/',
+      onImage: function (src, caption) { log.textContent = 'onImage: ' + src + ' / ' + caption; }
+    });
+    ODCases.keys.forEach(function (k) {
+      var a = document.createElement('a');
+      a.textContent = k;
+      a.addEventListener('click', function () { ODCases.show(k); });
+      bar.appendChild(a);
+    });
+    var x = document.createElement('a');
+    x.textContent = 'hide';
+    x.addEventListener('click', function () { ODCases.hide(); });
+    bar.appendChild(x);
+    ODCases.show('bab');
+  }).catch(function (err) { log.textContent = 'error: ' + err; });
+})();
+</script>
+</body>
+</html>

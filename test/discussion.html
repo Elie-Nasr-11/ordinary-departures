@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Discussion module test</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--ink:#fff;--soft:#c3c6cd;--mute:#9a9ea7;--rule:#2a2c32;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+html,body{margin:0;background:#000;color:#fff;font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#hd{position:fixed;top:0;left:0;right:0;height:64px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:12px;padding:0 24px;font-family:var(--mono);font-size:12px;color:var(--mute);z-index:2}
+#hd button{font:inherit;color:#fff;background:none;border:1px solid var(--rule);padding:4px 10px;cursor:pointer}
+#root{position:fixed;top:64px;left:0;right:0;bottom:0}
+</style>
+<link rel="stylesheet" href="../css/discussion.css">
+</head>
+<body>
+<div id="hd">test: discussion
+  <button id="ba">A text</button><button id="bg">G graph</button><button id="bc">C what follows</button>
+  <button id="bp">next panel</button><button id="br">reset panels</button><span id="msg"></span></div>
+<div id="root"></div>
+<script src="../lib/rough.js"></script>
+<script src="../lib/sketch.js"></script>
+<script src="../js/discussion.js"></script>
+<script>
+(function () {
+  // Stands in for the host: it drives the sections and the graph panels with inline styles only,
+  // the way GSAP would (opacity and visibility on the sections, opacity and a y translate on the g.odd-p).
+  var root = document.getElementById('root'), msg = document.getElementById('msg');
+  var shown = 0;
+  function show(which) {
+    ['odd-a', 'odd-g', 'odd-c'].forEach(function (cls) {
+      var el = root.querySelector('.' + cls), on = cls === which;
+      if (!el) return;
+      el.style.opacity = on ? '1' : '0';
+      el.style.visibility = on ? 'visible' : 'hidden';
+    });
+  }
+  function panels() { return Array.prototype.slice.call(root.querySelectorAll('.odd-g svg > g.odd-p')); }
+  function setP(g, op, dy) { g.style.opacity = String(op); g.setAttribute('transform', 'translate(0 ' + dy.toFixed(1) + ')'); }
+  function tween(g) {
+    var t0 = null;
+    function step(t) {
+      if (t0 === null) t0 = t;
+      var k = Math.min(1, (t - t0) / 600), e = 1 - Math.pow(1 - k, 3);
+      setP(g, e, 24 * (1 - e));
+      if (k < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  function reset() { panels().forEach(function (g) { setP(g, 0, 24); }); shown = 0; msg.textContent = 'panels hidden'; }
+  function next() {
+    var ps = panels();
+    if (shown >= ps.length) { msg.textContent = 'all five panels shown'; return; }
+    show('odd-g'); tween(ps[shown]); shown++; msg.textContent = 'panel ' + shown + ' of ' + ps.length;
+  }
+  document.getElementById('ba').onclick = function () { show('odd-a'); msg.textContent = 'screen A'; };
+  document.getElementById('bg').onclick = function () { show('odd-g'); msg.textContent = 'screen G'; };
+  document.getElementById('bc').onclick = function () { show('odd-c'); msg.textContent = 'screen C'; };
+  document.getElementById('bp').onclick = next;
+  document.getElementById('br').onclick = reset;
+  fetch('../data/cases.json').then(function (r) { return r.json(); }).then(function (data) {
+    window.ODDiscussion.build(data.discussion, root);
+    var n = panels().length, texts = root.querySelectorAll('.odd-g svg > text').length;
+    show('odd-a');
+    msg.textContent = 'built; ' + n + ' panels as direct children of the svg, ' + texts + ' stray texts at the svg root (want 0)';
+  }).catch(function (e) { msg.textContent = 'error: ' + e; });
+})();
+</script>
+</body>
+</html>

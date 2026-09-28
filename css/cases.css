@@ -1,0 +1,109 @@
+/* Ordinary Departures: case panels. Everything is scoped under .odc / .odc-panel so nothing leaks. */
+
+/* the root itself lets clicks, hover and wheel through to the scene;
+   only a shown panel (.odc-panel.on) takes the pointer back */
+.odc{pointer-events:none}
+
+.odc-panel{
+  position:absolute;inset:0;
+  box-sizing:border-box;
+  padding:24px 32px 28px;
+  background:rgba(0,0,0,.86);
+  color:var(--ink,#fff);
+  font-family:var(--sans,Inter,system-ui,sans-serif);
+  -webkit-font-smoothing:antialiased;
+  overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  opacity:0;visibility:hidden;
+  pointer-events:none;
+  transition:opacity .35s ease,visibility 0s linear .35s;
+}
+.odc-panel::-webkit-scrollbar{display:none;width:0;height:0}
+.odc-panel.on{
+  opacity:1;visibility:visible;
+  pointer-events:auto;
+  transition:opacity .35s ease,visibility 0s linear 0s;
+}
+.odc-panel *{box-sizing:border-box}
+.odc-panel p{margin:0}
+
+/* head */
+.odc-panel .odc-eb{
+  font-family:var(--mono,"JetBrains Mono",ui-monospace,monospace);
+  font-size:11px;letter-spacing:.04em;color:var(--mute,#9a9ea7);
+  max-width:44ch;
+}
+.odc-panel .odc-name{
+  font-family:var(--sans,Inter,system-ui,sans-serif);
+  font-weight:300;font-size:26px;letter-spacing:-.02em;line-height:1.1;
+  font-variation-settings:"opsz" 32;
+  color:var(--ink,#fff);
+  margin:10px 0 0;max-width:44ch;
+}
+.odc-panel .odc-meta{
+  font-family:var(--mono,"JetBrains Mono",ui-monospace,monospace);
+  font-size:11px;line-height:1.5;color:var(--mute,#9a9ea7);
+  margin-top:8px;max-width:44ch;
+}
+
+/* the two images */
+.odc-panel .odc-imgs{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  margin-top:14px;
+}
+.odc-panel figure{margin:0;min-width:0}
+.odc-panel .odc-im{
+  display:block;width:100%;aspect-ratio:4/3;
+  object-fit:cover;background:#111;
+}
+.odc-panel .odc-im.odc-click{cursor:pointer}
+.odc-panel .odc-im.odc-click:hover{filter:brightness(1.12)}
+.odc-panel figcaption{
+  font-family:var(--mono,"JetBrains Mono",ui-monospace,monospace);
+  font-size:10.5px;line-height:1.4;color:var(--mute,#9a9ea7);
+  margin-top:6px;
+}
+
+/* the sketch */
+.odc-panel .dg{
+  margin:14px 0 0;padding:8px 0 0;
+  border-top:1px solid var(--rule,#2a2c32);
+  border-bottom:1px solid var(--rule,#2a2c32);
+}
+.odc-panel .dg svg{display:block;width:100%;max-width:460px;margin:0 auto;height:auto;overflow:visible}
+
+/* the four texts, two columns */
+.odc-panel .odc-txt{
+  display:grid;grid-template-columns:1fr 1fr;column-gap:24px;
+  margin-top:14px;
+}
+.odc-panel .odc-col{min-width:0}
+.odc-panel .odc-blk{margin-top:14px;max-width:44ch}
+.odc-panel .odc-blk:first-child{margin-top:0}
+.odc-panel .odc-lab{
+  font-family:var(--mono,"JetBrains Mono",ui-monospace,monospace);
+  font-size:11px;letter-spacing:.04em;color:var(--mute,#9a9ea7);
+  margin-bottom:4px;
+}
+.odc-panel .odc-blk p.odc-body{
+  font-size:13px;line-height:1.5;color:var(--soft,#c3c6cd);font-weight:400;
+}
+.odc-panel .odc-blk.odc-take p.odc-body{color:var(--ink,#fff)}
+
+/* the source line */
+.odc-panel .odc-src{
+  font-family:var(--mono,"JetBrains Mono",ui-monospace,monospace);
+  font-size:10.5px;line-height:1.5;color:var(--mute,#9a9ea7);
+  margin-top:14px;padding-top:8px;
+  border-top:1px solid var(--rule,#2a2c32);
+  max-width:44ch;
+}
+
+/* narrow windows: one column of text, images still side by side */
+@media (max-width:520px){
+  .odc-panel{padding:20px 16px 32px}
+  .odc-panel .odc-txt{grid-template-columns:1fr}
+  .odc-panel .odc-col+.odc-col .odc-blk:first-child{margin-top:14px}
+}
