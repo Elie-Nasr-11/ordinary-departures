@@ -98,7 +98,7 @@ a{color:inherit}
 #tbc .links button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--soft);background:none;border:1px solid #3a3d45;border-radius:999px;padding:8px 15px;cursor:pointer;transition:color .2s,border-color .2s}
 #tbc .links button:hover{color:#fff;border-color:#c3c6cd}
 #qcards{position:absolute;inset:0;pointer-events:none}
-#qcards .qcard{position:absolute;left:6vw;top:50%;width:min(80vw,44ch);opacity:0;visibility:hidden;padding:24px 28px 26px;border-radius:16px;background:rgba(0,0,0,.86);box-shadow:0 0 70px 46px rgba(0,0,0,.86)}
+#qcards .qcard{position:absolute;left:4vw;bottom:52px;width:min(80vw,44ch);opacity:0;visibility:hidden;padding:24px 28px 26px;border-radius:16px;background:rgba(0,0,0,.86);box-shadow:0 0 70px 46px rgba(0,0,0,.86)}
 .qcard .eb{font-family:var(--mono);font-size:var(--fs-meta);color:var(--mute);letter-spacing:.08em;margin-bottom:12px}
 .qcard p{margin:0;font-size:clamp(16px,1.35vw,19px);line-height:1.55;color:#fff;font-weight:300}
 /* the six questions, listed over the dimmed map */

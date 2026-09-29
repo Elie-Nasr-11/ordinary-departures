@@ -84,7 +84,7 @@ function build(c) {
     Q.cards.push(rec); }); });
   // the question cards
   const qroot = $('#qcards');
-  Qs.forEach(Q => { const el = document.createElement('div'); el.className = 'qcard'; el.id = 'qcard' + Q.qi; el.innerHTML = `<div class="eb">${Q.k} · ${Q.steps.length} steps</div><p>${esc(Q.q)}</p>`; qroot.appendChild(el); gsap.set(el, {yPercent: -50}); });
+  Qs.forEach(Q => { const el = document.createElement('div'); el.className = 'qcard'; el.id = 'qcard' + Q.qi; el.innerHTML = `<div class="eb">${Q.k} · ${Q.steps.length} steps</div><p>${esc(Q.q)}</p>`; qroot.appendChild(el); });
 
   // ---------- shared geometry, refilled every frame ------------------------------------------
   const maxRels = Math.max(...Qs.map(Q => Q.rels.length)), maxSpurs = Math.max(...Qs.map(Q => Q.spurs.length));
@@ -142,12 +142,9 @@ function build(c) {
     rideFade = Q ? Q.st.a : 0; routeR = Math.max(...Qs.map(q => q.st.r));
     gn = 0;
     // the routes on the map, for any question whose route is showing
-    const now = performance.now() / 1000;
     Qs.forEach(q => { const w = q.st.r * (1 - q.st.a); if (q.line) { q.line.material.opacity = .85 * w; q.line.visible = w > .005; } if (w < .005) return;
       q.route.forEach(p => gput(p.x, p.y, p.z, WHITE, 2.0, .12 * w));                 // the light along the line
       q.mp.forEach(p => gput(p.x, p.y, p.z + .02, WHITE, 2.6, .9 * w));               // the steps
-      { const n = q.route.length, head = Math.floor(((now * .07) % 1) * (n - 1));   // a light travelling the route
-        for (let k = 0; k < 14; k++) { const i = head - k * 2; if (i < 0) break; const p = q.route[i]; gput(p.x, p.y, p.z + .03, WHITE, 3.0 - k * .12, .55 * w * (1 - k / 14)); } }
       // the step terms of the question stay bright on the dimmed map
       q.steps.forEach(s => { if (s.n0 && s.n0._p) s.n0._p.mapMul = 1 / Math.max(.05, 1 - .5 * routeR); }); });
     Qs.forEach(q => { if (q.st.r * (1 - q.st.a) < .005) q.steps.forEach(s => { if (s.n0 && s.n0._p) s.n0._p.mapMul = null; }); });
