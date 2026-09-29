@@ -3,7 +3,7 @@
    Each question: its route shown on the map, then its terms lift onto a
    track in space and flow past through a haze of the layers' colours; the
    cases meet the ride as cards beside their step. Then the framework and
-   findings, position and proposition, the discussion, the note, and
+   findings, position and proposition, the discussion, and
    "To be continued". Plugs into the scene built by site.js.
    ============================================================ */
 (() => {
@@ -61,8 +61,10 @@ function build(c) {
       haze.push({x, yo: gauss(s + 'y') * 2.4, zo: gauss(s + 'z') * 1.6, c: [lerp(c0[0], c1[0], f), lerp(c0[1], c1[1], f), lerp(c0[2], c1[2], f)], size: 1.3 + rnd(s + 's') * 2.6, a: .08 + rnd(s + 'o') * .11}); }
     // the route on the map through the step terms (a centripetal spline)
     const mp = steps.map(s => s.n0 && s.n0._p).filter(Boolean).map(p => new THREE.Vector3(p.x, p.y, 0.14));
-    const route = []; if (mp.length > 1) { const cr = new THREE.CatmullRomCurve3(mp, false, 'centripetal', .5); cr.getSpacedPoints(160).forEach(v => route.push(v)); }
-    const Q = {k, qi, D, steps, terms, rels, spurs, xEnd, byId, stepById, st: {a: 0, x: steps[0].x, r: 0}, q: (MAP.flows[k] || {}).question || '', end: D.end, imgs: [], haze, route, mp, cards: []};
+    const route = []; if (mp.length > 1) { const cr = new THREE.CatmullRomCurve3(mp, false, 'centripetal', .5); cr.getSpacedPoints(200).forEach(v => route.push(v)); }
+    // the route as a solid line; frame() lights it with the glow cloud
+    let line = null; if (route.length > 1) { line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(route), new THREE.LineBasicMaterial({color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false})); line.renderOrder = 5; line.frustumCulled = false; line.visible = false; scene.add(line); }
+    const Q = {k, qi, D, steps, terms, rels, spurs, xEnd, byId, stepById, st: {a: 0, x: steps[0].x, r: 0}, q: (MAP.flows[k] || {}).question || '', end: D.end, imgs: [], haze, route, line, mp, cards: []};
     D.imgs.forEach((im, j) => {
       const mat = new THREE.MeshBasicMaterial({color: 0x000000, transparent: true, opacity: 0, depthWrite: false});
       const m = new THREE.Mesh(new THREE.PlaneGeometry(im.w / S, im.h / S), mat); m.visible = false; m.renderOrder = 6; scene.add(m);
@@ -78,7 +80,7 @@ function build(c) {
     const anchor = label === '__end' ? null : Q.steps.find(s => s.label === label); if (label !== '__end' && !anchor) return;
     const ims = (cs.imgs || []).map(([f, cap]) => `<img src="img/cases/${f}.jpg" alt="${esc(cap)}">`).join('');
     const rec = {a: 0, ry: 0, cs, x: anchor ? anchor.x : Q.xEnd + 34};
-    rec.l = mkLabel('ccard', `<div class="n">${esc(cs.n)} · ${esc(cs.name)}</div><div class="m">${esc(cs.meta)}</div><div class="ims">${ims}</div><div class="t">${esc(cs.take)}</div><div class="more"><div class="dg">${cs.sketch_svg}</div><div class="ctx"><div><div class="lab">Theory</div><p>${esc(cs.theory)}</p><div class="lab">Method</div><p>${esc(cs.method)}</p></div><div><div class="lab">Outcome</div><p>${esc(cs.outcome)}</p><div class="lab">Source</div><p class="src">${esc(cs.src)}</p></div></div></div>`, 0, 0, 0, 12, -100, -100, -.5, .9, {ref: rec, keep: true, mins: 1, maxs: 1, data: {k: 'case', id: cs.key}});
+    rec.l = mkLabel('ccard', `<div class="n">Case · ${esc(cs.name)}</div><div class="m">${esc(cs.meta)}</div><div class="ims">${ims}</div><div class="t">${esc(cs.take)}</div><div class="more"><div class="dg">${cs.sketch_svg}</div><div class="ctx"><div><div class="lab">Theory</div><p>${esc(cs.theory)}</p><div class="lab">Method</div><p>${esc(cs.method)}</p></div><div><div class="lab">Outcome</div><p>${esc(cs.outcome)}</p><div class="lab">Source</div><p class="src">${esc(cs.src)}</p></div></div></div>`, 0, 0, 0, 12, -100, -100, -.5, .9, {ref: rec, keep: true, mins: 1, maxs: 1, data: {k: 'case', id: cs.key}});
     Q.cards.push(rec); }); });
   // the question cards
   const qroot = $('#qcards');
@@ -96,7 +98,7 @@ function build(c) {
   const spineL = segs(300, 5, true), relL = segs(maxRels * 2, 3), spurL = segs(maxSpurs * 10, 4), routeL = segs(2 * 170, 5, true);
   const upd = (o, n) => { o.g.attributes.position.needsUpdate = true; o.g.attributes.color.needsUpdate = true; o.g.setDrawRange(0, n); o.m.visible = n > 0; };
   // the glow cloud: the haze, the spine's light, the steps, the routes on the map
-  const NG = 1900, gPos = new Float32Array(NG * 3), gCol = new Float32Array(NG * 3), gSize = new Float32Array(NG), gKind = new Float32Array(NG).fill(6), gStroke = new Float32Array(NG), gAlpha = new Float32Array(NG), gRise = new Float32Array(NG);
+  const NG = 2400, gPos = new Float32Array(NG * 3), gCol = new Float32Array(NG * 3), gSize = new Float32Array(NG), gKind = new Float32Array(NG).fill(6), gStroke = new Float32Array(NG), gAlpha = new Float32Array(NG), gRise = new Float32Array(NG);
   const gg = new THREE.BufferGeometry();
   gg.setAttribute('position', new THREE.BufferAttribute(gPos, 3)); gg.setAttribute('col', new THREE.BufferAttribute(gCol, 3)); gg.setAttribute('size', new THREE.BufferAttribute(gSize, 1));
   gg.setAttribute('kind', new THREE.BufferAttribute(gKind, 1)); gg.setAttribute('stroke', new THREE.BufferAttribute(gStroke, 1)); gg.setAttribute('alpha', new THREE.BufferAttribute(gAlpha, 1)); gg.setAttribute('rise', new THREE.BufferAttribute(gRise, 1));
@@ -140,8 +142,12 @@ function build(c) {
     rideFade = Q ? Q.st.a : 0; routeR = Math.max(...Qs.map(q => q.st.r));
     gn = 0;
     // the routes on the map, for any question whose route is showing
-    Qs.forEach(q => { const w = q.st.r * (1 - q.st.a); if (w < .005) return;
-      q.route.forEach(p => gput(p.x, p.y, p.z, WHITE, .6, .3 * w)); q.mp.forEach(p => gput(p.x, p.y, p.z + .02, WHITE, 1.5, .75 * w));
+    const now = performance.now() / 1000;
+    Qs.forEach(q => { const w = q.st.r * (1 - q.st.a); if (q.line) { q.line.material.opacity = .85 * w; q.line.visible = w > .005; } if (w < .005) return;
+      q.route.forEach(p => gput(p.x, p.y, p.z, WHITE, 2.0, .12 * w));                 // the light along the line
+      q.mp.forEach(p => gput(p.x, p.y, p.z + .02, WHITE, 2.6, .9 * w));               // the steps
+      { const n = q.route.length, head = Math.floor(((now * .07) % 1) * (n - 1));   // a light travelling the route
+        for (let k = 0; k < 14; k++) { const i = head - k * 2; if (i < 0) break; const p = q.route[i]; gput(p.x, p.y, p.z + .03, WHITE, 3.0 - k * .12, .55 * w * (1 - k / 14)); } }
       // the step terms of the question stay bright on the dimmed map
       q.steps.forEach(s => { if (s.n0 && s.n0._p) s.n0._p.mapMul = 1 / Math.max(.05, 1 - .5 * routeR); }); });
     Qs.forEach(q => { if (q.st.r * (1 - q.st.a) < .005) q.steps.forEach(s => { if (s.n0 && s.n0._p) s.n0._p.mapMul = null; }); });
@@ -174,80 +180,92 @@ function build(c) {
     gg.setDrawRange(0, gn); glow.visible = gn > 0;
   }
 
-  // ---------- the framework, quiet: marks, lines, the "?"; the labels on hover ----------
-  const fw = {p: 0, find: 0, on: 0};
-  const fwLabels = [], fwSegs = []; let hoverCase = null;
+  // ---------- the framework: the cases placed on the faded map, what carries forward, the two findings ----------
+  const fw = {p: 0, lines: 0, f1: 0, f2: 0, on: 0};
+  const fwLabels = []; let hoverCase = null;
   {
     const G = L, ERA = [null, [-100000, -3000], [-3000, 500], [500, 1400], [1400, 1900], [1900, 1957], [1957, 1986], [1986, 2011], [2011, 2026]];
     const X = y => { for (let e = 1; e <= 8; e++) { const [a, b] = ERA[e]; if (y >= a && y <= b) return G.colX[e] + 40 + (y - a) / (b - a) * (G.colW[e] - 80); } return G.SX0; };
     const Y = (k, f) => G.rowY[k] + 100 + f * (G.ROWH[k] - 130);
-    const seg = (x1, y1, x2, y2, col, al, dash) => { if (!dash) { fwSegs.push({x: Math.min(x1, x2), p: [x1, y1, x2, y2], c: col, a: al}); return; }
+    const caseSegs = [], flowSegs = [], findSegs = [];
+    const seg = (arr, x1, y1, x2, y2, col, al, dash) => { if (!dash) { arr.push({x: Math.min(x1, x2), p: [x1, y1, x2, y2], c: col, a: al}); return; }
       const [on, off] = dash, len = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.floor(len / (on + off)));
-      for (let i = 0; i < n; i++) { const t0 = i * (on + off) / len, t1 = Math.min(1, (i * (on + off) + on) / len); fwSegs.push({x: Math.min(x1, x2), p: [x1 + (x2 - x1) * t0, y1 + (y2 - y1) * t0, x1 + (x2 - x1) * t1, y1 + (y2 - y1) * t1], c: col, a: al}); } };
-    const bez = (x0, y0, x1, y1, x2, y2, x3, y3, col, al, dash) => { const N = 60; let px = x0, py = y0;
+      for (let i = 0; i < n; i++) { const t0 = i * (on + off) / len, t1 = Math.min(1, (i * (on + off) + on) / len); arr.push({x: Math.min(x1, x2), p: [x1 + (x2 - x1) * t0, y1 + (y2 - y1) * t0, x1 + (x2 - x1) * t1, y1 + (y2 - y1) * t1], c: col, a: al}); } };
+    const bez = (arr, x0, y0, x1, y1, x2, y2, x3, y3, col, al, dash) => { const N = 60; let px = x0, py = y0;
       for (let i = 1; i <= N; i++) { const t = i / N, u = 1 - t, a = u * u * u, b = 3 * u * u * t, cc = 3 * u * t * t, d = t * t * t, x = a * x0 + b * x1 + cc * x2 + d * x3, y = a * y0 + b * y1 + cc * y2 + d * y3;
-        if (!dash || i % 2) fwSegs.push({x: Math.min(px, x), p: [px, py, x, y], c: col, a: al}); px = x; py = y; } };
-    const head = (x, y, col, s = 16) => { seg(x - s, y - s * .6, x, y, col, 1); seg(x - s, y + s * .6, x, y, col, 1); };
-    const lab = (x, y, s, cs, o = {}) => { const l = mkLabel('bx' + (o.mono ? ' mono2' : ''), esc(s), wx(x), wy(y), 0.2, o.sz || 20, o.a === 'middle' ? -50 : o.a === 'end' ? -100 : 0, -50, 0, 0,
-      {keep: true, mins: .5, af: () => fw.p > .55 ? (hoverCase === cs ? 1 : hoverCase ? .15 : .4) : 0, style: o.fill ? {color: o.fill} : null}); fwLabels.push(l); return l; };
+        if (!dash || i % 2) arr.push({x: Math.min(px, x), p: [px, py, x, y], c: col, a: al}); px = x; py = y; } };
+    const head = (arr, x, y, col, s = 16) => { seg(arr, x - s, y - s * .6, x, y, col, 1); seg(arr, x - s, y + s * .6, x, y, col, 1); };
+    const stx = x => clamp((x - G.colX[1]) / (G.W - G.colX[1]), 0, 1) * .5;
+    const caseA = (cs, x) => clamp((fw.p - stx(x)) / .2, 0, 1) * (hoverCase ? (hoverCase === cs ? 1 : .25) : 1);
+    const hoverOn = (l, cs) => { l.el.addEventListener('mouseenter', () => hoverCase = cs); l.el.addEventListener('mouseleave', () => { if (hoverCase === cs) hoverCase = null; }); };
+    // a label beside a mark: the case's name, then what the case shows there; placed clear of the others each frame
+    const R = [0, -50, .4, 0], Lf = [-100, -50, -.4, 0], Tp = [-50, -100, 0, .4], Bt = [-50, 0, 0, -.4], DIAG = [[0, -100, .35, .3], [0, 0, .35, -.3], [-100, -100, -.35, .3], [-100, 0, -.35, -.3]];
+    const ALT = {r: [R, Lf, Tp, Bt, ...DIAG], l: [Lf, R, Tp, Bt, ...DIAG], b: [Bt, Tp, R, Lf, ...DIAG], t: [Tp, Bt, R, Lf, ...DIAG]};
+    const lab = (x, y, cs, s, side, o = {}) => { const alts = ALT[side || 'r'], name = o.name != null ? o.name : cs ? SHORT[cs] : '';
+      const l = mkLabel('bx' + (o.mono ? ' mono2' : ''), (name ? `<b>${esc(name)}</b>` : '') + esc(s), wx(x), wy(y), 0.2, o.sz || 17, alts[0][0], alts[0][1], 0, 0,
+        {keep: true, mins: .8, maxs: 1, af: o.af || (() => caseA(cs, x)), data: cs ? {k: 'case', id: cs} : null});
+      l.col = o.col == null ? 1 : o.col; l.alts = alts; if (cs) hoverOn(l, cs); fwLabels.push(l); return l; };
+    const mark = (x, y, cs, on = true) => { const l = mkLabel('mk' + (on ? '' : ' hollow'), '', wx(x), wy(y), 0.25, 13, -50, -50, 0, 0, {keep: true, mins: .8, maxs: 1, af: () => caseA(cs, x), data: {k: 'case', id: cs}}); hoverOn(l, cs); fwLabels.push(l); return l; };
     const xB = X(-575), xI = X(690), x61 = X(1961), x62 = X(1962), x67 = X(1967), x74 = X(1974), x82 = X(1982), x91 = X(1991), x11 = X(2011);
     const xT = G.scX.f + G.SCW / 2, yT = Y('F', .5), XN = G.SX0 - 22;
     const Pp = {i: Y('P', .86), b: Y('P', .62), k: Y('P', .38), t: Y('P', .12)};
     const RL = '#4a9c92', SO = '#c3c6cd';
-    [[xB, Y('M', .5), Y('F', .45)], [xI, Pp.i, Y('F', .45)], [x61, Y('M', .5), Pp.b], [x67, Pp.k, Y('F', .75)], [x74, Pp.t, Y('F', .22)], [x82, Y('V', .5), Y('F', .75)]].forEach(([x, a, b]) => seg(x, a, x, b, '#6b6f78', .9, [3, 7]));
-    [[xI, Pp.i], [x61, Pp.b], [x67, Pp.k]].forEach(([x, y]) => { [-2, 0, 2].forEach(dy => seg(x, y + dy, XN - 8, y + dy, RL, .9)); head(XN - 6, y, RL);
-      bez(XN + 8, y, xT - 60, y, xT - 90, yT - 120, xT - 30, yT - 30, '#ffffff', .8, true); });
-    bez(x91 + 16, Y('V', .5) + 10, xT + 80, Y('V', .5) + 60, xT + 70, yT - 200, xT + 22, yT - 38, '#ffffff', .8, true);
+    // the cases: a mark in each layer they sit in, linked; hollow where the case holds the meaning back
+    [[xB, Y('M', .5), Y('F', .45)], [xI, Pp.i, Y('F', .45)], [x61, Y('M', .5), Pp.b], [x67, Pp.k, Y('F', .75)], [x74, Pp.t, Y('F', .22)], [x82, Y('V', .5), Y('F', .75)]].forEach(([x, a, b]) => seg(caseSegs, x, a, x, b, '#6b6f78', .9, [3, 7]));
+    seg(caseSegs, x62 + 30, Y('F', .22), x74 - 36, Y('F', .22), SO, 1); head(caseSegs, x74 - 32, Y('F', .22), SO);
+    mark(xB, Y('M', .5), 'bab'); mark(xB, Y('F', .45), 'bab'); mark(xI, Y('F', .45), 'ise'); mark(xI, Pp.i, 'ise');
+    mark(x61, Y('M', .5), 'bai'); mark(x61, Pp.b, 'bai'); mark(x67, Pp.k, 'ksc'); mark(x67, Y('F', .75), 'ksc', false);
+    mark(x62, Y('F', .22), 'air'); mark(x74, Y('F', .22), 'air', false); mark(x74, Pp.t, 'air', false);
+    mark(x82, Y('V', .5), 'vvm'); mark(x82, Y('F', .75), 'vvm');
+    mark(x11, Y('F', .6), 'spa');
+    lab(xB, Y('M', .5), 'bab', 'the walk transforms the walker', 'r');
+    lab(x61, Y('M', .5), 'bai', 'one man’s day becomes the rite', 'r');
+    lab(x82, Y('V', .5), 'vvm', 'an honest account of loss', 'l');
+    lab(x91, Y('V', .5), 'vvm', 'Kennedy, 1991', 'r', {name: 'Space Mirror'});
+    lab(xI, Pp.i, 'ise', 'rebuilt every twenty years, since c. 690', 't');
+    lab(x61, Pp.b, 'bai', 'Gagarin’s day, repeated by every crew', 'l');
+    lab(x67, Pp.k, 'ksc', 'walkout and rites, every launch', 't');
+    lab(x74, Pp.t, 'air', 'the hall becomes a process', 'r');
+    lab(xB, Y('F', .45), 'bab', 'the route', 'b');
+    lab(xI, Y('F', .45), 'ise', 'the shrine', 'b');
+    lab((x62 + x74) / 2, Y('F', .22), 'air', '12 years', 't', {mono: true, name: '', sz: 14, col: 0});
+    lab(x67, Y('F', .75), 'ksc', 'built for the vehicle', 'l');
+    lab(x82, Y('F', .75), 'vvm', 'the wall of names', 'r');
+    lab(x11, Y('F', .6), 'spa', 'a route cut into the land', 'l');
+    // what carries forward: the practices repeated to this day, and what the thesis takes from the cases, or guards against
+    [[xI, Pp.i], [x61, Pp.b], [x67, Pp.k]].forEach(([x, y]) => { [-2, 0, 2].forEach(dy => seg(flowSegs, x, y + dy, XN - 8, y + dy, RL, .9)); head(flowSegs, XN - 6, y, RL);
+      bez(flowSegs, XN + 8, y, xT - 60, y, xT - 90, yT - 120, xT - 30, yT - 30, '#ffffff', .8, true); });
+    seg(flowSegs, x82 + 30, Y('V', .5), x91 - 12, Y('V', .5), '#ffffff', 1);
+    bez(flowSegs, x91 + 16, Y('V', .5) + 10, xT + 80, Y('V', .5) + 60, xT + 70, yT - 200, xT + 22, yT - 38, '#ffffff', .8, true);
     const yB = Y('F', .45), yR = Y('F', .22), yLow = Y('F', .97);
-    bez(xB + 20, yB + 20, xB + 260, yLow, xT - 520, yLow, xT - 26, yT + 22, '#ffffff', .8, true); head(xT - 24, yT + 21, '#ffffff', 12);
-    bez(x74 + 26, yR, x74 + 700, yR, xT - 360, yT - 8, xT - 36, yT - 4, '#9a9ea7', 1, true); head(xT - 36, yT - 4, '#9a9ea7', 12);
-    bez(x11 + 28, Y('F', .6), x11 + 300, Y('F', .6), xT - 220, yT + 6, xT - 36, yT + 8, '#ffffff', .8, true);
-    seg(x62 + 30, Y('F', .22), x74 - 36, Y('F', .22), '#c3c6cd', 1); head(x74 - 32, Y('F', .22), '#c3c6cd');
-    seg(x82 + 30, Y('V', .5), x91 - 12, Y('V', .5), '#ffffff', 1);
-    for (let i = 0; i < 28; i++) { const a0 = i / 28 * Math.PI * 2, a1 = (i + .55) / 28 * Math.PI * 2; seg(xT + 34 * Math.cos(a0), yT + 34 * Math.sin(a0), xT + 34 * Math.cos(a1), yT + 34 * Math.sin(a1), '#ffffff', 1); }
-    fwSegs.sort((p, q) => p.x - q.x);
-    lab(xB + 38, Y('M', .5) + 8, 'the walk transforms the walker', '03');
-    lab(x61 + 38, Y('M', .5) + 8, 'one man’s day becomes the rite', '02');
-    lab(x82 - 38, Y('V', .5) + 8, 'an honest account of loss', '05', {a: 'end'});
-    lab(x91 + 22, Y('V', .5) + 8, 'Space Mirror, Kennedy, 1991', '05');
-    lab(xI + 38, Pp.i - 18, 'rebuilt every twenty years, since c. 690', '04');
-    lab(x61 - 38, Pp.b + 8, 'Gagarin’s day, repeated by every crew', '02', {a: 'end'});
-    lab(x74 + 40, Pp.k - 18, 'walkout and rites, every launch', '01');
-    lab(x74 + 38, Pp.t + 8, 'the hall becomes a process', '06', {fill: SO});
-    lab(xB, Y('F', .45) + 62, 'the route', '03', {a: 'middle', sz: 16, mono: true, fill: SO});
-    lab(xI, Y('F', .45) + 62, 'the shrine', '04', {a: 'middle', sz: 16, mono: true, fill: SO});
-    lab((x62 + x74) / 2, Y('F', .22) - 22, '12 years', '06', {a: 'middle', sz: 16, mono: true, fill: SO});
-    lab(x67 - 38, Y('F', .75) + 8, 'built for the vehicle', '01', {a: 'end', fill: SO});
-    lab(x82 + 38, Y('F', .75) + 8, 'the wall of names', '05');
-    lab(x11 - 38, Y('F', .6) + 8, 'a route cut into the land', '07', {a: 'end'});
-    lab(xT - 30, yT + 120, 'precedent', '03', {sz: 16, mono: true});
-    lab(xT - 320, yT - 40, 'warning', '06', {sz: 16, mono: true, fill: SO});
-    fwLabels.push(mkLabel('qm', `?<small>The launch complex:<br>form for where<br>the meaning went</small>`, wx(xT), wy(yT), 0.2, 46, -50, -50, 0, 0, {keep: true, mins: .42, maxs: .7, af: () => clamp((fw.p - .62) / .3, 0, 1)}));
-    fwLabels.push(mkLabel('dot', '', wx(x91), wy(Y('V', .5)), 0.2, 18, -50, -50, 0, 0, {keep: true, mins: .4, af: () => clamp((fw.p - .5) / .25, 0, 1)}));
-    const stx = x => clamp((x - G.colX[1]) / (G.W - G.colX[1]), 0, 1) * .5;
-    const mark = (x, y, n, on = true) => { const l = mkLabel('mk' + (on ? '' : ' hollow'), n, wx(x), wy(y), 0.25, 18, -50, -50, 0, 0, {keep: true, mins: .38, maxs: .6, af: () => clamp((fw.p - stx(x)) / .2, 0, 1), data: {k: 'case', id: n}});
-      l.el.addEventListener('mouseenter', () => hoverCase = n); l.el.addEventListener('mouseleave', () => { if (hoverCase === n) hoverCase = null; }); fwLabels.push(l); };
-    mark(xB, Y('M', .5), '03'); mark(xB, Y('F', .45), '03'); mark(xI, Y('F', .45), '04'); mark(xI, Pp.i, '04');
-    mark(x61, Y('M', .5), '02'); mark(x61, Pp.b, '02'); mark(x67, Pp.k, '01'); mark(x67, Y('F', .75), '01', false);
-    mark(x62, Y('F', .22), '06'); mark(x74, Y('F', .22), '06', false); mark(x74, Pp.t, '06', false);
-    mark(x82, Y('V', .5), '05'); mark(x82, Y('F', .75), '05');
-    mark(x11, Y('F', .6), '07');
+    bez(flowSegs, xB + 20, yB + 20, xB + 260, yLow, xT - 520, yLow, xT - 26, yT + 22, '#ffffff', .8, true); head(flowSegs, xT - 24, yT + 21, '#ffffff', 12);
+    bez(flowSegs, x74 + 26, yR, x74 + 700, yR, xT - 360, yT - 8, xT - 36, yT - 4, '#9a9ea7', 1, true); head(flowSegs, xT - 36, yT - 4, '#9a9ea7', 12);
+    bez(flowSegs, x11 + 28, Y('F', .6), x11 + 300, Y('F', .6), xT - 220, yT + 6, xT - 36, yT + 8, '#ffffff', .8, true);
+    for (let i = 0; i < 28; i++) { const a0 = i / 28 * Math.PI * 2, a1 = (i + .55) / 28 * Math.PI * 2; seg(flowSegs, xT + 34 * Math.cos(a0), yT + 34 * Math.sin(a0), xT + 34 * Math.cos(a1), yT + 34 * Math.sin(a1), '#ffffff', 1); }
+    const linesA = x0 => () => clamp((fw.lines - stx(x0) * .9) / .35, 0, 1) * (hoverCase ? .25 : 1);
+    lab(xT - 330, yT + 96, null, 'precedent', 't', {mono: true, sz: 14, col: 0, af: linesA(xT - 400)});
+    lab(xT - 330, yT - 44, null, 'warning', 't', {mono: true, sz: 14, col: 0, af: linesA(xT - 700)});
+    const qA = () => clamp((fw.lines - .62) / .3, 0, 1);
+    const qm = mkLabel('qm', '?', wx(xT), wy(yT), 0.2, 46, -50, -50, 0, 0, {keep: true, mins: .6, maxs: .8, af: qA});
+    qm.col = 3; qm.alts = [[-50, -50, 0, 0]]; fwLabels.push(qm);
+    const qt = mkLabel('qt', 'The launch complex: form for where the meaning went', wx(xT), wy(yT), 0.2, 15, 0, -50, 0, 0, {keep: true, mins: .8, maxs: 1, af: qA});
+    qt.col = 2; qt.alts = [[0, -50, .8, 0], [-50, -100, 0, .8], [-50, 0, 0, -.8], [-100, -50, -.8, 0]]; fwLabels.push(qt);
+    fwLabels.push(mkLabel('dot', '', wx(x91), wy(Y('V', .5)), 0.2, 16, -50, -50, 0, 0, {keep: true, mins: .8, maxs: 1, af: () => clamp((fw.lines - .5) / .25, 0, 1)}));
+    // the two findings along the base, one bracket each
     const yA = G.SB + 64;
-    fwLabels.push(mkLabel('mono', 'Findings', wx(120), wy(yA - 14), 0.2, 24, 0, 0, 0, 0, {keep: true, mins: .45, af: () => clamp(fw.find / .3, 0, 1), style: {color: '#fff', fontFamily: 'var(--sans)', fontWeight: 500}}));
-    const findSegs = [];
-    [[G.colX[1], G.colX[6], '1', 'Before the heroic age, form carries the rite'], [G.colX[6], XN, '2', 'From the heroic age, form goes to the vehicle, and the meaning moves to ritual and testimony']].forEach(([a, b, n, t], j) => {
+    [[G.colX[1], G.colX[6], '1', 'Before the heroic age, form carries the rite', () => fw.f1], [G.colX[6], XN, '2', 'From the heroic age, form goes to the vehicle, and the meaning moves to ritual and testimony', () => fw.f2]].forEach(([a, b, n, t, fv]) => {
       for (let i = 0; i < 12; i++) { const xa = a + 16 + (b - a - 32) * i / 12, xb = a + 16 + (b - a - 32) * (i + 1) / 12; findSegs.push({x: xa, p: [xa, yA, xb, yA], c: '#ffffff', a: 1}); }
       [a + 16, b - 16].forEach(x => findSegs.push({x, p: [x, yA - 10, x, yA + 10], c: '#ffffff', a: 1}));
-      fwLabels.push(mkLabel('arg', `${n}&nbsp;&nbsp;${esc(t)}`, wx(a + 24), wy(yA + 20), 0.2, 24, 0, 0, 0, 0, {keep: true, mins: .45, af: () => clamp((fw.find - j * .3) / .4, 0, 1)})); });
-    findSegs.sort((p, q) => p.x - q.x);
-    fw.lines = makeLines(fwSegs.map(s => ({...s, p: [wx(s.p[0]), wy(s.p[1]), wx(s.p[2]), wy(s.p[3])]})), 0.18, 5);
-    fw.findLines = makeLines(findSegs.map(s => ({...s, p: [wx(s.p[0]), wy(s.p[1]), wx(s.p[2]), wy(s.p[3])]})), 0.18, 5);
+      fwLabels.push(mkLabel('arg', `${n}&nbsp;&nbsp;${esc(t)}`, wx(a + 24), wy(yA + 22), 0.2, 22, 0, 0, 0, 0, {keep: true, mins: .6, maxs: 1, af: () => clamp(fv() / .4, 0, 1)})); });
+    caseSegs.sort((p, q) => p.x - q.x); flowSegs.sort((p, q) => p.x - q.x); findSegs.sort((p, q) => p.x - q.x);
+    const toWorld = arr => arr.map(s => ({...s, p: [wx(s.p[0]), wy(s.p[1]), wx(s.p[2]), wy(s.p[3])]}));
+    fw.caseLines = makeLines(toWorld(caseSegs), 0.18, 5); fw.flowLines = makeLines(toWorld(flowSegs), 0.18, 5); fw.findLines = makeLines(toWorld(findSegs), 0.18, 5);
   }
 
   // ---------- the map's brightness under all this --------------------------------------------
   const dim = {v: 0};
   const mul = () => (1 - rideFade) * (1 - .5 * routeR) * (1 - .65 * fw.on) * (1 - dim.v);
-  function reset() { Qs.forEach(Q => { Q.st.a = 0; Q.st.r = 0; Q.st.x = Q.steps[0].x; }); fw.p = 0; fw.find = 0; fw.on = 0; dim.v = 0; hoverCase = null; }
+  function reset() { Qs.forEach(Q => { Q.st.a = 0; Q.st.r = 0; Q.st.x = Q.steps[0].x; }); fw.p = 0; fw.lines = 0; fw.f1 = 0; fw.f2 = 0; fw.on = 0; dim.v = 0; hoverCase = null; }
 
   // ---------- the timeline, appended to the master ------------------------------------------------
   const T = {}, stops = [];
@@ -265,7 +283,7 @@ function build(c) {
       // the lift onto the track
       tl.to(st, {a: 1, duration: 1.3, ease: 'power1.inOut'}, t); camTo(RIDE, t, 1.3); t += 1.5;
       stops.push([Q.k + ':0', t, `${Q.k} · ${steps[0].label}`]);
-      const caseStop = (key, t0) => { stops.push(['case:' + key + ':' + Q.k, t0 + .45, `Case ${(CASES.cases.find(x => x.key === key) || {}).n || ''} · ${SHORT[key] || key}`]); return .9; };
+      const caseStop = (key, t0) => { stops.push(['case:' + key + ':' + Q.k, t0 + .45, `Case · ${SHORT[key] || key}`]); return .9; };
       for (let k = 1; k < n; k++) {
         tl.to(st, {x: steps[k].x, duration: .5, ease: 'none'}, t); t += .5;
         stops.push([Q.k + ':' + k, t, `${Q.k} · ${steps[k].label}`]);
@@ -278,12 +296,17 @@ function build(c) {
     });
     // the framework and the findings
     T.fw = t; tl.to(Qs[5].st, {r: 0, duration: .8}, t);
-    camTo({p: [0, -2, V.FD * 1.04], t: [0, -2, 0]}, t, 1.0);
-    tl.to(fw, {on: 1, duration: .8, ease: 'power1.inOut'}, t); tl.to(fw, {p: 1, duration: 2.2}, t + .3);
-    stops.push(['fw', t + 2.6, 'Framework · hover a case']); t += 3.0;
-    T.find = t; tl.to(fw, {find: 1, duration: .8}, t); stops.push(['find', t + .9, 'Findings']); t += 1.8;
+    camTo({p: [0, -3.2, V.FD * 1.0], t: [0, -3.2, 0]}, t, 1.0);
+    tl.to(fw, {on: 1, duration: .8, ease: 'power1.inOut'}, t); tl.to(fw, {p: 1, duration: 1.8}, t + .3);
+    fade('#fw1', t + .4, t + 2.8); stops.push(['fw', t + 1.8, 'Framework']); t += 2.9;
+    tl.to(fw, {lines: 1, duration: 1.8}, t);
+    fade('#fw2', t + .1, t + 2.9); stops.push(['fw:2', t + 1.7, 'Framework · what carries forward']); t += 3.0;
+    T.find = t; tl.to(fw, {f1: 1, duration: .8}, t); camTo({p: [-5, -4.2, V.FD * .95], t: [-5, -4.2, 0]}, t, 1.2);
+    fade('#fw3', t + .2, t + 2.7); stops.push(['find:1', t + 1.2, 'Finding 1']); t += 2.8;
+    tl.to(fw, {f2: 1, duration: .8}, t); camTo({p: [5, -4.2, V.FD * .95], t: [5, -4.2, 0]}, t, 1.2);
+    fade('#fw4', t + .2, t + 2.7); stops.push(['find:2', t + 1.2, 'Finding 2']); t += 2.8;
     // position, proposition
-    T.pos = t; tl.to(dim, {v: 1, duration: .9, ease: 'power1.inOut'}, t); tl.to(fw, {on: 0, p: 0, find: 0, duration: .9}, t);
+    T.pos = t; tl.to(dim, {v: 1, duration: .9, ease: 'power1.inOut'}, t); tl.to(fw, {on: 0, p: 0, lines: 0, f1: 0, f2: 0, duration: .9}, t);
     camTo({p: [0, 0, V.FD * 1.5], t: [0, 0, 0]}, t, 14, 'none');
     fade('#pos', t + .3, t + 2.2); stops.push(['pos', t + 1.1, 'Position']); t += 2.2;
     T.prop = t; fade('#prop', t, t + 2.2); stops.push(['prop', t + 1.0, 'Proposition']); t += 2.2;
@@ -297,14 +320,14 @@ function build(c) {
       panels.forEach(g => { const k = Number(g.dataset.panel); if (k === 0) return; gsap.set(g, {opacity: 0, y: 40}); tl.fromTo(g, {opacity: 0, y: 40}, {opacity: 1, y: 0, duration: .7, ease: 'power1.out', immediateRender: false}, t + .4 + (k - 1) * 1.15); });
       [['Frequent', 1], ['Who launches', 2], ['Regular', 3], ['Rare', 4]].forEach(([nm, k]) => stops.push(['disc:g' + k, t + .4 + (k - 1) * 1.15 + .8, 'Discussion · ' + nm])); }
     t += 6.0;
-    show(dC, t, t + 2.4); stops.push(['disc:c', t + 1.1, 'What follows']); t += 2.5;
+    show(dC, t, t + 2.4); stops.push(['disc:c', t + 1.1, 'Discussion · the site']); t += 2.5;
     tl.to('#disc', {autoAlpha: 0, duration: .3}, t - .3);
     // the closing note, then to be continued
     T.end = t; fade('#tbc', t, t + 2, true); stops.push(['tbc', t + .9, 'To be continued']); t += 1.8;
     T.total = t;
     return T;
   }
-  function after() { fw.lines.set(fw.p); fw.findLines.set(fw.find); fw.lines.m.material.opacity = fw.on; fw.findLines.m.material.opacity = fw.on; }
+  function after() { fw.caseLines.set(fw.p); fw.flowLines.set(fw.lines); fw.findLines.set((fw.f1 + fw.f2) / 2); [fw.caseLines, fw.flowLines, fw.findLines].forEach(o => { o.m.material.opacity = fw.on; }); }
   return {frame, after, timeline, mul, stops, T, Qs, fw, reset, resize: () => layoutTrack(camera.aspect)};
 }
 })();

@@ -35,15 +35,17 @@ a{color:inherit}
 .lb.endm{font-weight:500;color:#fff;pointer-events:none;line-height:1.1}
 .lb.endm i{display:inline-block;width:.6em;height:.6em;background:#f0a24b;margin-right:.5em;vertical-align:.02em}
 .lb.endm small{display:block;font-weight:400;font-size:.5em;color:var(--mute);margin-top:.4em;padding-left:1.2em;white-space:normal;width:16em;line-height:1.35}
-.lb.bx{color:#fff;background:rgba(10,10,12,.88);padding:.3em .55em;border-radius:.4em;pointer-events:none;font-size:inherit}
-.lb.bx.mono2{font-family:var(--mono)}
-.lb.mk{font-family:var(--mono);font-weight:500;color:#000;background:#fff;border-radius:50%;width:2.6em;height:2.6em;align-items:center;justify-content:center;cursor:pointer}
-.lb.mk.on{display:flex}
-.lb.mk.hollow{background:#000;color:#c3c6cd;border:.14em solid #c3c6cd}
-.lb.mk:hover{background:#f0b95e;color:#000;border-color:#f0b95e}
+.lb.bx{color:var(--soft);background:rgba(10,10,12,.9);padding:.32em .6em;border-radius:.4em;font-size:inherit;transition:opacity .15s}
+.lb.bx b{font-weight:500;color:#fff;margin-right:.5em}
+.lb.bx:hover{color:#fff}
+.lb.bx.mono2{font-family:var(--mono);color:var(--mute)}
+.lb.mk{width:1em;height:1em;background:#fff;border-radius:50%;cursor:pointer;box-shadow:0 0 0 .25em rgba(0,0,0,.6)}
+.lb.mk.on{display:block}
+.lb.mk.hollow{background:#000;border:.16em solid #c3c6cd}
+.lb.mk:hover{background:#f0b95e;border-color:#f0b95e}
 .lb.qm{font-weight:500;color:#fff;text-align:center;pointer-events:none;line-height:1;flex-direction:column;align-items:center}
 .lb.qm.on{display:flex}
-.lb.qm small{display:block;font-size:.46em;font-weight:400;line-height:1.3;margin-top:1.1em;white-space:nowrap;color:var(--soft)}
+.lb.qt{color:var(--soft);white-space:normal;width:12em;line-height:1.35;pointer-events:none;background:rgba(10,10,12,.9);padding:.35em .55em;border-radius:.4em}
 .lb.dot{width:1em;height:1em;background:#fff;border-radius:50%;pointer-events:none}
 /* a case card beside its step: clean, rounded, opens in place */
 .lb.ccard{width:300px;padding:16px 18px 18px;background:rgba(10,10,12,.92);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.55);white-space:normal;line-height:1.4;transition:width .35s ease,box-shadow .3s}
@@ -92,10 +94,36 @@ a{color:inherit}
 #screens .pr{font-size:clamp(15px,1.4vw,19px);line-height:1.5;color:#e6e8ec;width:min(86vw,44ch)}
 #screens .pr.q{font-size:clamp(20px,2vw,28px);width:min(88vw,30ch);color:#fff}
 #tbc{font-family:var(--mono);font-size:var(--fs-body)!important;color:var(--mute)!important;letter-spacing:.08em;text-align:center}
+#tbc .links{display:flex;gap:12px;justify-content:center;margin-top:30px;pointer-events:auto}
+#tbc .links button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--soft);background:none;border:1px solid #3a3d45;border-radius:999px;padding:8px 15px;cursor:pointer;transition:color .2s,border-color .2s}
+#tbc .links button:hover{color:#fff;border-color:#c3c6cd}
 #qcards{position:absolute;inset:0;pointer-events:none}
-#qcards .qcard{position:absolute;left:7vw;top:50%;width:min(80vw,40ch);opacity:0;visibility:hidden}
+#qcards .qcard{position:absolute;left:6vw;top:50%;width:min(80vw,44ch);opacity:0;visibility:hidden;padding:24px 28px 26px;border-radius:16px;background:rgba(0,0,0,.86);box-shadow:0 0 70px 46px rgba(0,0,0,.86)}
 .qcard .eb{font-family:var(--mono);font-size:var(--fs-meta);color:var(--mute);letter-spacing:.08em;margin-bottom:12px}
-.qcard p{margin:0;font-size:var(--fs-lead);line-height:1.6;color:var(--soft);font-weight:300}
+.qcard p{margin:0;font-size:clamp(16px,1.35vw,19px);line-height:1.55;color:#fff;font-weight:300}
+/* the six questions, listed over the dimmed map */
+#qlist{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;visibility:hidden}
+#qlist .in{width:min(92vw,106ch);padding:28px 34px 30px;border-radius:16px;background:rgba(0,0,0,.86);box-shadow:0 0 70px 46px rgba(0,0,0,.86);pointer-events:auto}
+#qlist .eb{font-family:var(--mono);font-size:var(--fs-meta);color:var(--mute);letter-spacing:.08em;margin-bottom:20px}
+#qlist ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,auto);grid-auto-flow:column;column-gap:56px;row-gap:20px}
+#qlist li{display:grid;grid-template-columns:2.5ch 1fr;gap:14px;cursor:pointer;color:var(--soft);transition:color .2s}
+#qlist li:hover{color:#fff}
+#qlist li .k{font-family:var(--mono);font-size:var(--fs-meta);color:var(--mute);padding-top:.4em;letter-spacing:.04em}
+#qlist li p{margin:0;font-size:14px;line-height:1.55;font-weight:300}
+/* the framework, explained in the band under the map: title, text, legend */
+#fwtext{position:absolute;left:0;right:0;bottom:54px;pointer-events:none}
+#fwtext .fwp{position:absolute;left:4vw;right:4vw;bottom:0;display:grid;grid-template-columns:minmax(0,30ch) minmax(0,54ch) auto;column-gap:56px;align-items:start;opacity:0;visibility:hidden}
+#fwtext .eb{font-family:var(--mono);font-size:var(--fs-meta);color:var(--mute);letter-spacing:.08em;margin-bottom:8px}
+#fwtext h3{margin:0;font-weight:400;font-size:clamp(15px,1.25vw,18px);line-height:1.3;letter-spacing:-.01em;color:#fff;font-variation-settings:"opsz" 32}
+#fwtext p{margin:0;font-size:12.5px;line-height:1.6;color:var(--soft);font-weight:300;padding-top:2px}
+#fwtext .lg{display:grid;grid-template-columns:26px auto 26px auto;gap:8px 10px;align-items:center;font-family:var(--mono);font-size:10px;line-height:1.3;color:var(--mute);padding-top:4px}
+#fwtext .lg i{display:block;width:26px;height:10px;position:relative}
+#fwtext .lg i.dot::before{content:"";position:absolute;left:8px;top:0;width:10px;height:10px;border-radius:50%;background:#fff}
+#fwtext .lg i.dot.hollow::before{background:#000;border:1.5px solid #c3c6cd;box-sizing:border-box}
+#fwtext .lg i.pr{background:linear-gradient(#4a9c92,#4a9c92) center/100% 2px no-repeat}
+#fwtext .lg i.dsh{background:repeating-linear-gradient(90deg,#fff 0 4px,transparent 4px 8px) center/100% 1.5px no-repeat}
+#fwtext .lg i.dsh.grey{background:repeating-linear-gradient(90deg,#9a9ea7 0 6px,transparent 6px 9px) center/100% 1.5px no-repeat}
+#fwtext .lg i.ring::before{content:"";position:absolute;left:7px;top:-1px;width:12px;height:12px;border-radius:50%;border:1px dashed #fff;box-sizing:border-box}
 #disc{position:absolute;top:64px;left:0;right:0;bottom:0;opacity:0;visibility:hidden;z-index:4}
 #disc section{transition:none!important}
 

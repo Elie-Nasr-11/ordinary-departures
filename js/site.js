@@ -11,7 +11,7 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 // ---------- constants -------------------------------------------------------
 const S = 60;                                   // sheet px per world unit
 const FOV = 40, TAN = Math.tan(FOV * Math.PI / 360);
-const LK = 1.15;                                // map text a little above its print size
+const LK = 1.3;                                 // map text above its print size, so the terms read
 const TK = 1.2;                                 // titles
 const DK = 1.5;                                 // dots larger than the print, so the nodes read
 const TCOL = {M: '#c4a4df', V: '#86b5df', P: '#87c9bc', F: '#d3b288'};
@@ -30,7 +30,8 @@ const rgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255)
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const $ = (s) => document.querySelector(s);
 
-Promise.all(['map', 'board', 'spines', 'cases', 'refs'].map(n => fetch('data/' + n + '.json').then(r => r.json())))
+const VER = (document.querySelector('script[src*="site.js"]') || {src: ''}).src.split('?v=')[1] || '';   // the data follows the scripts' version, so a new build is never read from cache
+Promise.all(['map', 'board', 'spines', 'cases', 'refs'].map(n => fetch('data/' + n + '.json' + (VER ? '?v=' + VER : '')).then(r => r.json())))
   .then(([MAP, BOARD, SPINES, CASES, REFS]) => build(MAP, BOARD, SPINES, CASES, REFS))
   .catch(err => { console.error('site: could not load data', err); const h = $('#landing .st'); if (h) h.textContent = 'Could not load the data. Serve the folder with python3 -m http.server and reload.'; });
 
@@ -50,6 +51,7 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
   const camera = new THREE.PerspectiveCamera(FOV, innerWidth / innerHeight, 0.5, 4000);
   const cam = {x: 0, y: 0, z: 200, tx: 0, ty: 0, tz: 0};
   const prog = {time: 0, conn: 0, fut: 0, claim: 0, band: {M: 0, V: 0, P: 0, F: 0}, tier: {M: 0, V: 0, P: 0, F: 0}};
+  const sdim = {v: 0};                                      // the map dimmed under the list of questions
 
   // ---------- labels: DOM elements projected from world points --------------
   const labelRoot = $('#labels'), labels = [];
@@ -294,11 +296,11 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
   }
 
   // ---------- the ride: one timeline, scrubbed by scroll -------------------------------
-  const T = {land: 0, p1: 1.2, p23: 2.6, q: 4.2, wall: 5.8, whole: 12.2, loose: 14.4, time: 16.6, d1: 18.0, d2: 19.8, conn: 21.6, fut: 23.0, claim: 24.4, end: 25.4, q1: 26.6, total: 26.6};
+  const T = {land: 0, p1: 1.2, p23: 2.6, q: 4.2, wall: 5.8, whole: 12.2, loose: 14.4, time: 16.6, d1: 18.0, d2: 19.8, conn: 21.6, fut: 23.0, claim: 24.4, end: 25.4, qs: 26.6, q1: 28.8, total: 28.8};
   let STOPS = [];
   const STOPS1 = [['land', 0, ''], ['p1', T.p1 + .5, 'Thesis'], ['p23', T.p23 + .6, 'Thesis'], ['q', T.q + .6, 'Central question'],
     ['wall', T.wall + 1.0, 'Departure, in images'], ['whole', T.whole + 1.9, 'Departure, in images'], ['loose', T.loose + 2.0, 'Departure, mapped'], ['time', T.time + .8, 'Timeline'],
-    ['d1', T.d1 + 1.0, 'Meaning and Value'], ['d2', T.d2 + 1.0, 'Practice and Form'], ['conn', T.conn + 1.0, 'Connections'], ['fut', T.fut + .9, 'Future'], ['claim', T.claim + .7, 'Claims'], ['end', T.end + .6, 'Departure, mapped']];
+    ['d1', T.d1 + 1.0, 'Meaning and Value'], ['d2', T.d2 + 1.0, 'Practice and Form'], ['conn', T.conn + 1.0, 'Connections'], ['fut', T.fut + .9, 'Future'], ['claim', T.claim + .7, 'Claims'], ['end', T.end + .6, 'Departure, mapped'], ['qs', T.qs + .9, 'Thesis questions']];
 
   // ---------- stages 2 and 3: the ride, from js/ride.js ----------
   const ride = window.ODRide ? ODRide.build({THREE, scene, camera, cam, MAP, SPINES, CASES, S, wx, wy, mkLabel, node, rgb, clamp, lerp, esc, PC, ERAN, TNAME, L, loader, maxAniso, aKind, aSize, aCol, kindAttr, sizeAttr, colAttr, makeLines, $, glowMat, VERT, FRAG, hoverables, pts}) : null;
@@ -307,7 +309,7 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
   function buildTimeline() {
     const keep = tl && tl.scrollTrigger ? tl.scrollTrigger.progress : 0;
     if (tl) { const st = tl.scrollTrigger; try { tl.revert(); } catch (e) { tl.kill(); } try { st && st.kill(); } catch (e) {} tl = null; }
-    Object.assign(prog, {time: 0, conn: 0, fut: 0, claim: 0}); Object.assign(prog.band, {M: 0, V: 0, P: 0, F: 0}); Object.assign(prog.tier, {M: 0, V: 0, P: 0, F: 0});
+    Object.assign(prog, {time: 0, conn: 0, fut: 0, claim: 0}); sdim.v = 0; Object.assign(prog.band, {M: 0, V: 0, P: 0, F: 0}); Object.assign(prog.tier, {M: 0, V: 0, P: 0, F: 0});
     wall.phi = -SPAN / 2 - 0.05; wall.mix = 1; wall.dist = 110; tiles.forEach(t => { t.st.r = 0; t.st.d = 0; });
     if (ride) ride.reset();
     views();
@@ -332,7 +334,7 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
     // the timeline, then the layers in two diagonals: Meaning to Value, then Value to Form
     camTo(V.timeIn, T.time, .6); camTo(V.timeOut, T.time + .6, T.d1 - T.time - .6, 'none');
     tl.to(prog, {time: 1, duration: 1.1}, T.time + .3);
-    const yM = bands.M.yc, yV = bands.V.yc, yP = bands.P.yc, yF = bands.F.yc, DZ = 27;
+    const yM = bands.M.yc, yV = bands.V.yc, yP = bands.P.yc, yF = bands.F.yc, DZ = 24;
     camTo({p: [-38, yM + 3, DZ], t: [-30, yM - .3, 0]}, T.d1, .6);
     camTo({p: [26, yV + 3, DZ], t: [34, yV - .3, 0]}, T.d1 + .6, T.d2 - T.d1 - .6, 'none');
     tl.to(prog.band, {M: 1, duration: .4, ease: 'power1.out'}, T.d1 + .1); tl.to(prog.tier, {M: 1, duration: 1.2}, T.d1 + .2);
@@ -344,6 +346,8 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
     camTo(V.full, T.conn, 1.2); tl.to(prog, {conn: 1, duration: 1.2}, T.conn + .3);
     camTo(V.futIn, T.fut, .6); camTo(V.futOut, T.fut + .6, T.claim - T.fut - .6, 'none'); tl.to(prog, {fut: 1, duration: 1.2}, T.fut + .2);
     camTo(V.claims, T.claim, .8); tl.to(prog, {claim: 1, duration: .9}, T.claim + .1);
+    // the six questions, listed, over the dimmed map
+    tl.to(sdim, {v: .88, duration: .7, ease: 'power1.inOut'}, T.qs); fade('#qlist', T.qs + .3, T.q1 - .05); tl.to(sdim, {v: 0, duration: .8, ease: 'power1.inOut'}, T.q1 - .2);
     // stages 2 and 3
     if (ride) { const T2 = ride.timeline(tl, camTo, fade, T, V); T.total = T2.total; }
     STOPS = STOPS1.concat(ride ? ride.stops : []);
@@ -354,7 +358,7 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
   }
 
   // ---------- header: dashes and the current step ------------------------------------
-  const SECTIONS = [['Thesis', 'p1'], ['Images', 'wall'], ['Map', 'time'], ['Q1', 'Q1'], ['Q2', 'Q2'], ['Q3', 'Q3'], ['Q4', 'Q4'], ['Q5', 'Q5'], ['Q6', 'Q6'], ['Framework', 'fw'], ['Position', 'pos'], ['Discussion', 'disc'], ['Dictionary', 'act:dict'], ['References', 'act:refs']];
+  const SECTIONS = [['Thesis', 'p1'], ['Images', 'wall'], ['Map', 'time'], ['Questions', 'qs'], ['Q1', 'Q1'], ['Q2', 'Q2'], ['Q3', 'Q3'], ['Q4', 'Q4'], ['Q5', 'Q5'], ['Q6', 'Q6'], ['Framework', 'fw'], ['Position', 'pos'], ['Discussion', 'disc'], ['Dictionary', 'act:dict'], ['References', 'act:refs']];
   const dashRoot = $('#hd .dashes'), curEl = $('#hd .cur');
   let curTitle = '';
   const dashes = SECTIONS.map(([name, go]) => { const d = document.createElement('div'); d.className = 'dash'; d.innerHTML = '<i></i>'; d.dataset.go = go; d.title = '';
@@ -372,8 +376,12 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
   }
   function scrollToT(t, dur) { const st = tl.scrollTrigger; const y = st.start + clamp(t / T.total, 0, 1) * (st.end - st.start); gsap.to(window, {scrollTo: y, duration: dur == null ? 1.6 : dur, ease: 'power2.inOut', overwrite: true}); }
   const curT = () => tl.scrollTrigger.progress * T.total;
-  function step(dir) { const t = curT(); if (dir > 0) { const s = STOPS.find(x => x[1] > t + .08); scrollToT(s ? s[1] : T.total); }
-                       else { const s = [...STOPS].reverse().find(x => x[1] < t - .08); scrollToT(s ? s[1] : 0); } }
+  // the arrows: one stop at a time, except inside a question, where they take two steps at once (cases and ends are never skipped)
+  const isStep = s => s && /^Q\d:[1-9]\d*$/.test(s[0]);
+  function step(dir) { const t = curT(), list = dir > 0 ? STOPS : [...STOPS].reverse();
+    const i = list.findIndex(x => dir > 0 ? x[1] > t + .08 : x[1] < t - .08); let s = list[i];
+    if (isStep(s) && isStep(list[i + 1])) s = list[i + 1];
+    scrollToT(s ? s[1] : dir > 0 ? T.total : 0); }
   $('#arrows .prev').addEventListener('click', () => step(-1)); $('#arrows .next').addEventListener('click', () => step(1));
   addEventListener('keydown', e => {
     if (window.ODOverlays && ODOverlays.isOpen()) return;
@@ -399,7 +407,7 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
                                  const i = imgByLabel[label.toLowerCase()]; if (i) return {src: 'img/map/' + i.file + '.jpg', alt: i.label, cap: i.label + ' · ' + i.dt}; return null; };
   function showTerm(t) { openOv(`<div class="eb">${ERAN[t.era]} · ${TNAME[t.tier]} · ${PN[t.person] || 'shared'}</div><h2>${esc(t.label)}</h2><p>${esc(t.d)}</p><div class="src">${esc(t.src)}</div>`, termImage(t.label)); }
   function open(k, id) {
-    if (k === 'case') { const cs = CASES.cases.find(x => x.key === id || x.n === String(id)); if (cs) openOv(`<div class="eb">Case ${cs.n} · ${esc(cs.q)}</div><h2>${esc(cs.name)}</h2><div class="meta">${esc(cs.meta)}</div><p>${esc(cs.take)}</p>`, {src: 'img/cases/' + cs.imgs[0][0] + '.jpg', alt: cs.imgs[0][1]}); return; }
+    if (k === 'case') { const cs = CASES.cases.find(x => x.key === id || x.n === String(id)); if (cs) openOv(`<div class="eb">Case · ${esc(cs.q)}</div><h2>${esc(cs.name)}</h2><div class="meta">${esc(cs.meta)}</div><p>${esc(cs.take)}</p>`, {src: 'img/cases/' + cs.imgs[0][0] + '.jpg', alt: cs.imgs[0][1]}); return; }
     if (k === 'term' && node[id] && node[id].tier === 'E') k = 'event';
     if (k === 'term') { if (String(id).startsWith('img:')) { const i = MAP.imgs.find(x => x.id === id.slice(4)); if (i) openOv(`<div class="eb">${ERAN[i.era]} · ${TNAME[i.tier]}</div><h2>${esc(i.label)}</h2><p>${esc(i.dt)}</p>`, {src: 'img/map/' + i.file + '.jpg', alt: i.label}); return; }
                         const t = node[id]; if (t) showTerm(t); }
@@ -440,6 +448,10 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
   // ---------- the text screens of stages 2 and 3 ----------
   $('#pos').innerHTML = `<div class="eb">Position</div>${esc(CASES.framework.position)}`;
   $('#prop').innerHTML = `<div class="eb">Proposition</div>${esc(CASES.framework.proposition)}`;
+  // the six questions listed; each row goes to its question
+  const goStop = (id, dur) => { const s = STOPS.find(x => x[0] === id); if (s) scrollToT(s[1], dur == null ? 2.2 : dur); };
+  { const ol = $('#qlist ol'); Object.keys(MAP.flows).filter(k => /^Q\d$/.test(k)).forEach(k => { const li = document.createElement('li'); li.innerHTML = `<span class="k">${k}</span><p>${esc(MAP.flows[k].question)}</p>`; li.addEventListener('click', () => goStop(k)); ol.appendChild(li); }); }
+  document.querySelectorAll('#tbc .links button').forEach(b => b.addEventListener('click', () => goStop(b.dataset.go, 2.6)));
   if (window.ODDiscussion) { try { ODDiscussion.build(CASES.discussion, $('#disc')); } catch (e) { console.error('discussion', e); } }
   if (window.ODOverlays) { try { ODOverlays.build({terms: MAP.terms, events: MAP.events, refs: REFS, eraName: e => ERAN[e] || '', tierName: k => TNAME[k] || 'Event', personName: p => PN[p] || 'shared', openTerm: id => open('term', id)}); } catch (e) { console.error('overlays', e); } }
 
@@ -471,8 +483,8 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
       if (depth < 2) { if (l.vis) { l.el.classList.remove('on'); l.vis = false; } continue; }
       const ppu = k0 / depth; let sc = ppu / S; const fs = l.b * sc;
       v3.applyMatrix4(pm);
-      if ((fs < 5.5 && !l.mins) || v3.x < -1.3 || v3.x > 1.3 || v3.y < -1.3 || v3.y > 1.3) { if (l.vis) { l.el.classList.remove('on'); l.vis = false; } continue; }
-      const fade = l.mins ? 1 : clamp((fs - 5.5) / 4.5, 0, 1); if (sc > l.maxs) sc = l.maxs; if (sc < l.mins) sc = l.mins;
+      if ((fs < 4.5 && !l.mins) || v3.x < -1.3 || v3.x > 1.3 || v3.y < -1.3 || v3.y > 1.3) { if (l.vis) { l.el.classList.remove('on'); l.vis = false; } continue; }
+      const fade = l.mins ? 1 : clamp((fs - 4.5) / 3.5, 0, 1); if (sc > l.maxs) sc = l.maxs; if (sc < l.mins) sc = l.mins;
       if (l.col != null) { if (!l.vis) { l.el.classList.add('on'); l.vis = true; } if (!l.ew) { l.ew = l.el.offsetWidth; l.eh = l.el.offsetHeight; }
         l._sx = (v3.x + 1) / 2 * w; l._sy = (1 - v3.y) / 2 * h; l._sc = sc; l._op = a * fade; colList.push(l); continue; }
       let sx = (v3.x + 1) / 2 * w + l.dx * sc * S, sy = (1 - v3.y) / 2 * h - l.dy * sc * S;
@@ -486,7 +498,7 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
   }
   function frame(now) {
     const t = now / 1000;
-    mapMul = ride ? ride.mul() : 1;
+    mapMul = (ride ? ride.mul() : 1) * (1 - sdim.v);
     updateTiles(); if (ride) ride.frame(); updatePoints(mapMul); if (ride) ride.after();
     colLines.set(prog.time); connLines.set(prog.conn); futLines.set(clamp(prog.fut / .35, 0, 1)); futRelLines.set(clamp((prog.fut - .3) / .7, 0, 1));
     [colLines, connLines, futLines, futRelLines].forEach(o => { o.m.material.opacity = mapMul; });

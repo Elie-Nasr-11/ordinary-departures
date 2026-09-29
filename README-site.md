@@ -121,3 +121,15 @@ Use `data/spines.json` `steps[].label` to pick the exact step; the case's `q` fi
 `img/tiles/` 123 board tiles, 640 × 480, tinted. `img/cases/` 14 case images, 960 × 720. `img/map/` 8 map images, 440 × 330. `img/spines/` 96 spine images, 400 × 300.
 
 `lib/rough.js`, `lib/sketch.js` (the pencil pipeline; sketch.js processes every `.dg svg` on load and sets `document.body.dataset.sketched`), `lib/d3.min.js` (not required for the site; the map layout is already exported).
+
+### Round 3 (29 Sep 2026, after the professor's feedback)
+
+- Question screens: larger text, a black fade behind the text; the question's route on the map is a solid glowing line with a light travelling along it.
+- A "Thesis questions" page after "Departure, mapped": the six questions listed, each a link to its ride.
+- Case studies labelled "Case · name" everywhere (cards, header, click cards); no numbers.
+- The map's terms read more: label scale 1.3, culled below 4.5 px, the diagonal passes closer.
+- The arrows take two steps at once inside a question; cases and ends are never skipped.
+- Framework in four stops (cases placed, what carries forward, finding 1, finding 2): named labels placed clear of each other, a legend and caption in the band under the map, the camera moving to each finding.
+- The discussion's last screen keeps only "The site, open".
+- "To be continued" has three buttons: the map, the central question, the thesis questions.
+- Scripts, styles and data carry a `?v=` version in `index.html`; bump it when files change so browsers do not serve a stale copy.
