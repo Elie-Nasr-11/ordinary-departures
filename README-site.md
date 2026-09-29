@@ -137,5 +137,5 @@ Use `data/spines.json` `steps[].label` to pick the exact step; the case's `q` fi
 ### Book covers on the references page (29 Sep 2026)
 
 - `img/covers/N.jpg` (N = the reference number) and `data/covers.json` list which entries have a cover; the references page shows a cover beside its entry.
-- Eleven covers were taken from the PDFs on the laptop (Augé, Bronner, Camus, Debord, Dunne & Raby, Hillier, Pascoe, Radin, Turner, van Gennep, Weizman; Radin and Turner are scans, so their title pages stand in).
-- The 55 books not on the laptop are listed in `../book-covers-to-find.md`, with the file naming to follow.
+- Only the essential books get a cover: twelve (the books under the six questions, and the ones behind the cases). Six came from PDFs on the laptop (Augé, Camus, Debord, Pascoe, Turner, van Gennep; Turner is a scan, so its title page stands in).
+- The six still to find (Arendt, Moonport, Gerovitch, Gordon, Sontag, Vaughan) are listed in `../book-covers-to-find.md`, with the file naming to follow.
