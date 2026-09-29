@@ -178,7 +178,10 @@
     list.className = 'odo-list';
     var html = '';
     var fmt = function (r) { var re = /\. /g, m; while ((m = re.exec(r))) { var head = r.slice(0, m.index), last = head.split(/[\s,]+/).pop() || ''; if (last.replace(/\W/g, '').length > 1 && head.length < 70) return '<b>' + esc(head) + '.</b> ' + esc(r.slice(m.index + 2)); } return esc(r); };
-    (O.refs || []).forEach(function (r, i) { html += '<p><span class="odo-n">' + (i + 1) + '</span>' + fmt(r) + '</p>'; });
+    var covers = O.covers || {};
+    (O.refs || []).forEach(function (r, i) { var c = covers[String(i + 1)];
+      html += c ? '<p class="odo-bk"><img src="' + esc(c) + '" alt="" loading="lazy"><span class="odo-e"><span class="odo-n">' + (i + 1) + '</span>' + fmt(r) + '</span></p>'
+               : '<p><span class="odo-n">' + (i + 1) + '</span>' + fmt(r) + '</p>'; });
     list.innerHTML = html;
     body.appendChild(list);
     return el;

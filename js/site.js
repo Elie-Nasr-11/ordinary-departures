@@ -31,11 +31,11 @@ const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const $ = (s) => document.querySelector(s);
 
 const VER = (document.querySelector('script[src*="site.js"]') || {src: ''}).src.split('?v=')[1] || '';   // the data follows the scripts' version, so a new build is never read from cache
-Promise.all(['map', 'board', 'spines', 'cases', 'refs'].map(n => fetch('data/' + n + '.json' + (VER ? '?v=' + VER : '')).then(r => r.json())))
-  .then(([MAP, BOARD, SPINES, CASES, REFS]) => build(MAP, BOARD, SPINES, CASES, REFS))
+Promise.all(['map', 'board', 'spines', 'cases', 'refs', 'covers'].map(n => fetch('data/' + n + '.json' + (VER ? '?v=' + VER : '')).then(r => r.ok ? r.json() : {})))
+  .then(([MAP, BOARD, SPINES, CASES, REFS, COVERS]) => build(MAP, BOARD, SPINES, CASES, REFS, COVERS || {}))
   .catch(err => { console.error('site: could not load data', err); const h = $('#landing .st'); if (h) h.textContent = 'Could not load the data. Serve the folder with python3 -m http.server and reload.'; });
 
-function build(MAP, BOARD, SPINES, CASES, REFS) {
+function build(MAP, BOARD, SPINES, CASES, REFS, COVERS) {
   const L = MAP.layout, W = L.W, H = L.H;
   const wx = px => px / S - W / (2 * S), wy = py => H / (2 * S) - py / S;
   const HALFW = W / (2 * S), HALFH = H / (2 * S);
@@ -453,7 +453,7 @@ function build(MAP, BOARD, SPINES, CASES, REFS) {
   { const ol = $('#qlist ol'); Object.keys(MAP.flows).filter(k => /^Q\d$/.test(k)).forEach(k => { const li = document.createElement('li'); li.innerHTML = `<span class="k">${k}</span><p>${esc(MAP.flows[k].question)}</p>`; li.addEventListener('click', () => goStop(k)); ol.appendChild(li); }); }
   document.querySelectorAll('#tbc .links button').forEach(b => b.addEventListener('click', () => goStop(b.dataset.go, 2.6)));
   if (window.ODDiscussion) { try { ODDiscussion.build(CASES.discussion, $('#disc')); } catch (e) { console.error('discussion', e); } }
-  if (window.ODOverlays) { try { ODOverlays.build({terms: MAP.terms, events: MAP.events, refs: REFS, eraName: e => ERAN[e] || '', tierName: k => TNAME[k] || 'Event', personName: p => PN[p] || 'shared', openTerm: id => open('term', id)}); } catch (e) { console.error('overlays', e); } }
+  if (window.ODOverlays) { try { ODOverlays.build({terms: MAP.terms, events: MAP.events, refs: REFS, covers: Object.fromEntries(Object.entries(COVERS).map(([k, v]) => [k, 'img/covers/' + v])), eraName: e => ERAN[e] || '', tierName: k => TNAME[k] || 'Event', personName: p => PN[p] || 'shared', openTerm: id => open('term', id)}); } catch (e) { console.error('overlays', e); } }
 
   // ---------- per frame ---------------------------------------------------------------
   const v3 = new THREE.Vector3(); let mapMul = 1; const colList = [];

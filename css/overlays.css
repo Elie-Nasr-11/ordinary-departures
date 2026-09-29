@@ -54,6 +54,11 @@
 .odo-refs .odo-list p b{font-weight:600;color:#d2d5da}
 .odo-refs .odo-list .odo-n{display:inline-block;width:28px;font-family:var(--mono,monospace);font-size:10px;color:var(--mute,#9a9ea7);text-indent:0}
 .odo-refs .odo-list p:last-child{margin-bottom:0}
+/* a book with its cover: the cover at the left, the entry beside it */
+.odo-refs .odo-list p.odo-bk{display:grid;grid-template-columns:44px 1fr;column-gap:10px;padding-left:0;text-indent:0;margin:0 0 10px;align-items:start}
+.odo-refs .odo-list p.odo-bk img{display:block;width:44px;height:auto;border-radius:2px;background:#111;box-shadow:0 2px 8px rgba(0,0,0,.6)}
+.odo-refs .odo-list p.odo-bk .odo-n{width:auto;margin-right:8px}
+.odo-refs .odo-list p.odo-bk .odo-e{display:block;min-width:0}
 
 /* small screens */
 @media (max-width:640px){
