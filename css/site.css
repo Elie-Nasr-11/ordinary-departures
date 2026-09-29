@@ -93,14 +93,14 @@ a{color:inherit}
 .pr.q{width:min(88vw,34ch);font-size:clamp(20px,2vw,28px);line-height:1.3;letter-spacing:-.01em;color:#fff;font-variation-settings:"opsz" 32}
 #screens .pr{font-size:clamp(15px,1.4vw,19px);line-height:1.5;color:#e6e8ec;width:min(86vw,44ch)}
 #screens .pr.q{font-size:clamp(20px,2vw,28px);width:min(88vw,30ch);color:#fff}
-#tbc{font-family:var(--mono);font-size:var(--fs-body)!important;color:var(--mute)!important;letter-spacing:.08em;text-align:center}
+#tbc{font-family:var(--mono);font-size:var(--fs-body)!important;color:var(--mute)!important;letter-spacing:.08em;text-align:center;width:max-content!important}
 #tbc .links{display:flex;gap:12px;justify-content:center;margin-top:30px;pointer-events:auto}
-#tbc .links button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--soft);background:none;border:1px solid #3a3d45;border-radius:999px;padding:8px 15px;cursor:pointer;transition:color .2s,border-color .2s}
+#tbc .links button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--soft);background:none;border:1px solid #3a3d45;border-radius:999px;padding:8px 16px;cursor:pointer;white-space:nowrap;transition:color .2s,border-color .2s}
 #tbc .links button:hover{color:#fff;border-color:#c3c6cd}
 #qcards{position:absolute;inset:0;pointer-events:none}
-#qcards .qcard{position:absolute;left:4vw;bottom:52px;width:min(80vw,44ch);opacity:0;visibility:hidden;padding:24px 28px 26px;border-radius:16px;background:rgba(0,0,0,.86);box-shadow:0 0 70px 46px rgba(0,0,0,.86)}
+#qcards .qcard{position:absolute;left:4vw;bottom:52px;width:min(80vw,42ch);opacity:0;visibility:hidden;padding:24px 28px 26px;border-radius:16px;background:rgba(0,0,0,.86);box-shadow:0 0 70px 46px rgba(0,0,0,.86)}
 .qcard .eb{font-family:var(--mono);font-size:var(--fs-meta);color:var(--mute);letter-spacing:.08em;margin-bottom:12px}
-.qcard p{margin:0;font-size:clamp(16px,1.35vw,19px);line-height:1.55;color:#fff;font-weight:300}
+.qcard p{margin:0;font-size:clamp(14px,1.15vw,16.5px);line-height:1.55;color:#fff;font-weight:300}
 /* the six questions, listed over the dimmed map */
 #qlist{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;visibility:hidden}
 #qlist .in{width:min(92vw,106ch);padding:28px 34px 30px;border-radius:16px;background:rgba(0,0,0,.86);box-shadow:0 0 70px 46px rgba(0,0,0,.86);pointer-events:auto}
